@@ -1,4 +1,0 @@
-module CNIOOpenSSL {
-    umbrella "/Users/WorkSpace/HBDayJournalServer/.build/checkouts/swift-nio-ssl/Sources/CNIOOpenSSL/include"
-    export *
-}
