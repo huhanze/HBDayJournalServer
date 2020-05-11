@@ -52,7 +52,7 @@ struct ResponseJSON<T: Content>: Content {
     /// 状态值
     private var status: ResponseStatus
     /// 请求响应结果描述
-    private var messsage: String
+    private var message: String
     /// 返回的数据
     private var content: T?
     
@@ -62,7 +62,7 @@ struct ResponseJSON<T: Content>: Content {
     /// - Parameter data: 需要返回的数据
     init(content: T) {
         self.status = .success
-        self.messsage = status.description
+        self.message = status.description
         self.content = content
     }
     
@@ -70,7 +70,7 @@ struct ResponseJSON<T: Content>: Content {
     /// - Parameter status: 根据请求需要返回的状态参数，默认请求成功
     init(status: ResponseStatus = .success) {
         self.status = status
-        self.messsage = status.description
+        self.message = status.description
         self.content = nil
     }
     
@@ -81,7 +81,7 @@ struct ResponseJSON<T: Content>: Content {
     init(status: ResponseStatus = .success,
          message: String = ResponseStatus.success.description) {
         self.status = status
-        self.messsage = message
+        self.message = message
         self.content = nil
     }
     
@@ -94,7 +94,7 @@ struct ResponseJSON<T: Content>: Content {
          message: String = ResponseStatus.success.description,
          content: T?) {
         self.status = status
-        self.messsage = message
+        self.message = message
         self.content = content
     }
 }
