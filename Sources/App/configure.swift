@@ -9,7 +9,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     var serverConfigure = NIOServerConfig.default()
     serverConfigure.hostname = "0.0.0.0"
-    serverConfigure.port = 8001
+    serverConfigure.port = 80
     services.register(serverConfigure)
     try services.register(FluentMySQLProvider())
 
