@@ -29,6 +29,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // Configure a SQLite database
     
     let mysql = MySQLDatabase(config: MySQLDatabaseConfig(hostname: "106.12.13.162", port: 3306, username: "root", password: "deitxihc521", database: "day_journal", capabilities: .default, characterSet: .utf8_general_ci, transport: .cleartext))
+    
+//    let mysql = MySQLDatabase(config: MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "dylanhu", password: "123456", database: "test", capabilities: .default, characterSet: .utf8_general_ci, transport: .cleartext))
 
     // Register the configured SQLite database to the database config.
     var databases = DatabasesConfig()
@@ -42,5 +44,6 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: AccessToken.self, database: .mysql)
     migrations.add(model: RefreshToken.self, database: .mysql)
     migrations.add(model: UserInfo.self, database: .mysql)
+    migrations.add(model: Image.self, database: .mysql)
     services.register(migrations)
 }
