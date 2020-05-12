@@ -14,19 +14,53 @@ final class UserController: RouteCollection {
     private let authController = AuthController()
     
     func boot(router: Router) throws {
-        let group = router.grouped("users")
+        let group = router.grouped(UserController.grouped)
         
         // post
-        group.post(User.self, at: "register", use: register)
-        group.post(User.self, at: "login", use: login)
-        group.post(GetUserInfoContainer.self, at: "getUserInfo", use: getUserInfo)
-        group.post(UserInfoRequestContainer.self, at: "updateUserInfo", use: updateUserInfo)
+        group.post(User.self, at: path(.registerPath), use: register)
+        group.post(User.self, at: path(.loginPath), use: login)
+        group.post(GetUserInfoContainer.self, at: path(.getUserInfoPath), use: getUserInfo)
+        group.post(UserInfoRequestContainer.self, at: path(.updateUserInfoPath), use: updateUserInfo)
+        group.post(UserPortraitContainer.self, at: path(.uploadPortraitPath), use: uploadUserPortrait)
+        
+        // get
+        group.get(path(.userPortraitPath),String.parameter, use: getUserPortrait)
     }
 }
 
+// MARK: - 用户路径
+private extension UserController {
+    
+    private static let grouped = "users"
+    /// 路径
+    enum UserRouterPath: String {
+        /// 用户注册
+        case registerPath = "register"
+        /// 用户登录
+        case loginPath = "login"
+        /// 获取用户信息
+        case getUserInfoPath = "getUserInfo"
+        /// 更新用户信息
+        case updateUserInfoPath = "updateUserInfo"
+        /// 上传用户头像
+        case uploadPortraitPath = "uploadPortrait"
+        /// 获取用头像
+        case userPortraitPath = "userPortrait"
+    }
+    
+    /// 获取用户路径
+    /// - Parameter userRouter: 路径类型
+    /// - Returns: 用户路径原始值
+    func path(_ userRouter: UserRouterPath) -> String {
+        return userRouter.rawValue
+    }
+
+}
+
+// MARK: - 用户相关请求
 extension UserController {
     
-    // MARK: - 注册
+    // MARK: 注册
     func register(_ req: Request, newUser: User) throws -> Future<Response> {
         let firstElement = User.query(on: req).filter(\.account == newUser.account).first()
         return firstElement.flatMap { existUser in
@@ -55,7 +89,7 @@ extension UserController {
         }
     }
     
-    // MARK: - 登录
+    // MARK: 登录
     func login(_ req: Request, _ user: User) throws -> Future <Response> {
         let firstResult = User.query(on: req).filter(\.account == user.account).first()
         return firstResult.flatMap { (loginUser) in
@@ -77,7 +111,7 @@ extension UserController {
             })
         }
     }
-    // MARK: - 获取用户信息
+    // MARK: 获取用户信息
     func getUserInfo(_ req: Request, _ container: GetUserInfoContainer) throws -> Future<Response> {
         
         let (token,response) = try req.checkParamsInHeader(req, name: "token")
@@ -103,7 +137,7 @@ extension UserController {
         return response
     }
     
-    // MARK: - 更新用户信息
+    // MARK: 更新用户信息
     func updateUserInfo(_ req: Request, _ container: UserInfoRequestContainer) throws -> Future<Response> {
         let token = BearerAuthorization(token: container.token)
         return AccessToken.authenticate(using: token, on: req).flatMap({ existToken in
@@ -125,6 +159,78 @@ extension UserController {
                 })
             })
         })
+    }
+    
+    /// 上传用户头像
+    /// - Parameters:
+    ///   - req: 请求
+    ///   - container: 请求的相关参数模型
+    /// - Throws: 异常抛出
+    /// - Returns: 请求的相应驱动
+    func uploadUserPortrait(_ req: Request, _ container: UserPortraitContainer) throws -> Future<Response> {
+        let token = BearerAuthorization(token: container.token)
+        return AccessToken.authenticate(using: token, on: req).flatMap { (existToken) in
+            guard let existToken = existToken else {
+                return try ResponseJSON<Empty>(status: .invalidateToken).encode(for: req)
+            }
+            
+            let first = UserInfo.query(on: req).filter(\.userID == existToken.userID).first()
+            return first.flatMap { [unowned self](user) in
+                if var user = user {
+                    guard container.imageFile.data.count < kImageMaxSize else {
+                        return try ResponseJSON<Empty>(status: .imageSizeToMaxLimit).encode(for: req)
+                    }
+                    let imageName = ServerUtils.imageName()
+                    let filePath = try ServerUtils.getImageDirectory(ImagePath.userPortrait, req: req) + "/" + imageName
+                    try Data(container.imageFile.data).write(to: URL(fileURLWithPath: filePath))
+                    let firstImage = Image.query(on: req).filter(\.userID == user.userID!).filter(\.type == Image.ImageType.userPortrait.rawValue).first()
+                    
+                    return firstImage.flatMap({ existImage in
+                        
+                        var image = Image(user.userID!, Image.ImageType.userPortrait, name: imageName, filePath)
+                        
+                        // 若用户头像已存在，则更新头像
+                        if let existImage = existImage {
+                            if !existImage.path.isEmpty {
+                                if FileManager.default.fileExists(atPath: existImage.path) {
+                                    try FileManager.default.removeItem(atPath: existImage.path)
+                                }
+                                
+                                image.id = existImage.id!
+                                image.createdAt = existImage.createdAt
+                                return image.update(on: req).flatMap({ updatedImage in
+                                    user.portraitUrl = "http://" + req.getHost() + "/" + UserController.grouped + "/" + self.path(.userPortraitPath) + "/" + imageName
+                                    return user.save(on: req).flatMap({ newUserInfo in
+                                        try ResponseJSON<UserPotraitUrlContainer>(status: .success, message: "用户头像更新成功！",content: UserPotraitUrlContainer(portrait: newUserInfo.portraitUrl!)).encode(for: req)
+                                    })
+                                })
+                            }
+                        }
+                       
+                        // 第一次上传用户头像
+                        return image.save(on: req).flatMap({ (existImage) in
+                            user.portraitUrl = "http://" + req.getHost() + "/" + UserController.grouped + "/" + self.path(.userPortraitPath) + "/" + imageName
+                            return user.save(on: req).flatMap({ newUserInfo in
+                                try ResponseJSON<UserPotraitUrlContainer>(status: .success, message: "用户头像上传成功！",content: UserPotraitUrlContainer(portrait: newUserInfo.portraitUrl!)).encode(for: req)
+                            })
+                        })
+                        
+                    })
+                }
+                return try ResponseJSON<Empty>(status: .userNotExist).encode(for: req)
+            }
+        }
+    }
+    
+    // MARK: 获取用户头像
+    func getUserPortrait(_ req: Request) throws -> Future<Response> {
+        let name = try req.parameters.next(String.self)
+        print(name)
+        let path = try ServerUtils.getImageDirectory(ImagePath.userPortrait, req: req) + "/" + name
+        if !FileManager.default.fileExists(atPath: path) {
+            return try ResponseJSON<Empty>(status: .failed, message: "访问的图片不存在！").encode(for: req)
+        }
+        return try req.streamFile(at: path)
     }
 }
 
@@ -148,4 +254,8 @@ private extension User {
 
 struct GetUserInfoContainer: Content {
     var userID: String
+}
+
+struct UserPotraitUrlContainer: Content {
+    var portrait: String
 }
