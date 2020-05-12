@@ -6,3 +6,10 @@
 //
 
 import Foundation
+
+
+struct ImagePath {
+    static let userPortrait = "userPortrait"
+}
+
+public let kImageMaxSize = 2048000

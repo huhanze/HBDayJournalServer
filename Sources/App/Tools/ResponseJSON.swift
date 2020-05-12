@@ -21,6 +21,7 @@ enum ResponseStatus: Int,Content {
     case unknownError = -1
     case userHasExist = 50000
     case userNotExist = 50001
+    case imageSizeToMaxLimit = 60001
     
     var description : String {
         switch self {
@@ -42,6 +43,8 @@ enum ResponseStatus: Int,Content {
             return "密码错误"
         case .lessParam:
             return "缺少参数"
+        case .imageSizeToMaxLimit:
+            return "图片超过了最大限制"
         }
     }
 }
