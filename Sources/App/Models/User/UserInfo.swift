@@ -94,3 +94,8 @@ struct UserInfoRequestContainer: Content {
     var age: Int?
     var sex: Int?
 }
+
+struct UserPortraitContainer: Content {
+    var token: String
+    var imageFile: File
+}
