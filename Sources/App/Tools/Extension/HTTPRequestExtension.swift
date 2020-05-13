@@ -22,7 +22,7 @@ extension HTTPHeaders {
 extension Request {
     // MARK: - 获取请求的host
     func getHost() -> String {
-        return self.getHeaderValue("host") ?? ""
+        return self.http.remotePeer.hostname ?? ""
     }
     // MARK: - 获取HTTPMethod
     func getHTTPMethod() -> HTTPMethod {
@@ -51,6 +51,7 @@ extension Request {
         return self.http.headers.getHeaderValue(name)
     }
     
+    /// 检查headers中的参数
     func checkParamsInHeader(_ req: Request, name headerName: String) throws ->  (String?,Future<Response>) {
         if !req.isContainHeader(headerName) {
             return try (nil,ResponseJSON<Empty>(status: .lessParam, message: "缺少\(headerName)参数").encode(for: req))
