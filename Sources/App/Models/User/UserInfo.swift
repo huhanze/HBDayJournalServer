@@ -26,6 +26,7 @@ struct UserInfo: MySQLModel {
     var city: String?
     var location: String?
     var portraitUrl: String?
+    var coverImageUrl: String?
     
 }
 
@@ -35,6 +36,7 @@ extension UserInfo {
         sex = container.sex
         nickName = container.nickName
         portraitUrl = container.portraitUrl
+        coverImageUrl = container.coverImageUrl
         phoneNumber = container.phoneNumber
         location = container.location
         birthday = container.birthday
@@ -47,6 +49,7 @@ extension UserInfo {
         sex = container.sex
         nickName = container.nickName
         portraitUrl = container.portraitUrl
+        coverImageUrl = container.coverImageUrl
         phoneNumber = container.phoneNumber
         location = container.location
         birthday = container.birthday
@@ -62,6 +65,7 @@ struct UserInfoContainer: Content {
     var userID: String = ""
     var nickName: String = ""
     var portraitUrl: String = ""
+    var coverImageUrl: String = ""
     var phoneNumber: String = ""
     var birthday: String = ""
     var city: String = ""
@@ -73,6 +77,7 @@ struct UserInfoContainer: Content {
         userID = user.userID ?? ""
         nickName = user.nickName ?? ""
         portraitUrl = user.portraitUrl ?? ""
+        coverImageUrl = user.coverImageUrl ?? ""
         phoneNumber = user.phoneNumber ?? ""
         birthday = user.birthday ?? ""
         city = user.city ?? ""
@@ -87,6 +92,7 @@ struct UserInfoRequestContainer: Content {
     var userID: String?
     var nickName: String?
     var portraitUrl: String?
+    var coverImageUrl: String?
     var phoneNumber: String?
     var birthday: String?
     var city: String?
@@ -96,6 +102,11 @@ struct UserInfoRequestContainer: Content {
 }
 
 struct UserPortraitContainer: Content {
+    var token: String
+    var imageFile: File
+}
+
+struct UserCoverImageContainer: Content {
     var token: String
     var imageFile: File
 }

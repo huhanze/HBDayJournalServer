@@ -10,8 +10,10 @@ import Foundation
 
 /// 图片路径
 struct ImagePath {
-    /// 用户模块
+    /// 用户头像
     static let userPortrait = "userPortrait"
+    /// 用户封面
+    static let userCover = "userCover"
 }
 
 

@@ -14,6 +14,7 @@ struct Image: MySQLModel {
     
     enum ImageType: String {
         case userPortrait = "userPortrait"
+        case userCover = "userCover"
     }
     
     var id: Int?
