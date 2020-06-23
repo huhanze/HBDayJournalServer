@@ -22,7 +22,7 @@ extension HTTPHeaders {
 extension Request {
     // MARK: - 获取请求的host
     func getHost() -> String {
-        return self.http.remotePeer.hostname ?? ""
+        return ConfigureManager.hostName
     }
     // MARK: - 获取HTTPMethod
     func getHTTPMethod() -> HTTPMethod {
