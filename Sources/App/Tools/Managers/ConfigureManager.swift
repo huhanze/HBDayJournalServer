@@ -55,17 +55,17 @@ public class ConfigureManager {
 class DatabaseConfigManager {
     
     struct MySQLConfig {
-//        let host: String = "106.12.13.162" // "localhost"
-//        let port: Int = 3306
-//        let userName: String = "root"  // dylanhu
-//        let password: String = "deitxihc521"  // 123456
-//        let database: String = "day_journal"  // test
-        
-        let host: String = "0.0.0.0" // "localhost"
+        let host: String = "106.12.13.162" // "localhost"
         let port: Int = 3306
-        let userName: String = "dylanhu"  // dylanhu
-        let password: String = "123456"  // 123456
-        let database: String = "test"  // test
+        let userName: String = "root"  // dylanhu
+        let password: String = "deitxihc521"  // 123456
+        let database: String = "day_journal"  // test
+        
+//        let host: String = "0.0.0.0" // "localhost"
+//        let port: Int = 3306
+//        let userName: String = "dylanhu"  // dylanhu
+//        let password: String = "123456"  // 123456
+//        let database: String = "test"  // test
     }
     
     
