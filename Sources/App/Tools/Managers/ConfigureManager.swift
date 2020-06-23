@@ -9,10 +9,12 @@ import Foundation
 import Vapor
 import FluentMySQL
 import Authentication
+import Leaf
 
 public class ConfigureManager {
     
-    
+//    static var hostName: String = "192.168.27.108"
+    static var hostName: String = "106.12.13.162"
     public static func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
         
         // =========================== NIOServerConfig ===========================
@@ -20,6 +22,9 @@ public class ConfigureManager {
         serverConfigure.hostname = "0.0.0.0"
         serverConfigure.port = 80
         services.register(serverConfigure)
+        
+        try services.register(LeafProvider())
+        config.prefer(LeafRenderer.self, for: ViewRenderer.self)
         
         // =========================== CommandConfig ===========================
         var commands = CommandConfig.default()
@@ -50,17 +55,17 @@ public class ConfigureManager {
 class DatabaseConfigManager {
     
     struct MySQLConfig {
-        let host: String = "106.12.13.162" // "localhost"
-        let port: Int = 3306
-        let userName: String = "root"  // dylanhu
-        let password: String = "deitxihc521"  // 123456
-        let database: String = "day_journal"  // test
-        
-//        let host: String = "localhost" // "localhost"
+//        let host: String = "106.12.13.162" // "localhost"
 //        let port: Int = 3306
-//        let userName: String = "dylanhu"  // dylanhu
-//        let password: String = "123456"  // 123456
-//        let database: String = "test"  // test
+//        let userName: String = "root"  // dylanhu
+//        let password: String = "deitxihc521"  // 123456
+//        let database: String = "day_journal"  // test
+        
+        let host: String = "0.0.0.0" // "localhost"
+        let port: Int = 3306
+        let userName: String = "dylanhu"  // dylanhu
+        let password: String = "123456"  // 123456
+        let database: String = "test"  // test
     }
     
     
@@ -99,6 +104,10 @@ public class MiddlewareManager {
             return try ["status":"404", "message" : "访问路径不存在"].encode(for: request)
         }))
         // middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
+        
+        let file = FileMiddleware(publicDirectory: "Public/")
+        middlewares.use(file)
+        
         middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
         middlewares.use(RequestControlMiddleware(Rate(30, .munite), MemoryKeyedCache()))
         services.register(middlewares)
